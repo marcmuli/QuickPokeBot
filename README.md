@@ -1,5 +1,6 @@
 ## Based on shiftcodeYT PokeBot2 
 Faster and riskier approach to farming, up to 120K exp per hour without eggs or evolve.
+[DOWNLOAD] (https://github.com/fededevi/QuickPokeBot/releases)
 
 
 ![](https://cloud.githubusercontent.com/assets/5583580/17182425/be384104-5423-11e6-9193-870a311fce4f.png)
@@ -19,7 +20,7 @@ Faster and riskier approach to farming, up to 120K exp per hour without eggs or 
 - [x] external.config | Contains: configuration
 
 # Setup Guide
-- Download and extract the newest release [here](https://github.com/shiftcodeYT/PokeBot2/releases/latest)
+- Download and extract the newest release [here](https://github.com/fededevi/QuickPokeBot/releases)
 - Edit external.config:
 - Change AuthType to "Google" or "Ptc"
 - If using "Ptc", change username and password to your login
