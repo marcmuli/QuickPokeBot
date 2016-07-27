@@ -1,1 +1,24 @@
 C:\Users\Brian\Documents\Visual Studio 2015\Projects\PokeBot22\PokemonGo.RocketAPI.Window\bin\Debug\PokemonGo.RocketAPI.Window.exe.config
+C:\Users\f.devigili\Documents\GitHubVisualStudio\PokeBot2\PokemonGo.RocketAPI.Window\obj\Debug\PokemonGo.RocketAPI.Window.csprojResolveAssemblyReference.cache
+C:\Users\f.devigili\Documents\GitHubVisualStudio\PokeBot2\PokemonGo.RocketAPI.Window\obj\Debug\PokemonGo.RocketAPI.Console.MainForm.resources
+C:\Users\f.devigili\Documents\GitHubVisualStudio\PokeBot2\PokemonGo.RocketAPI.Window\obj\Debug\PokemonGo.RocketAPI.Window.Properties.Resources.resources
+C:\Users\f.devigili\Documents\GitHubVisualStudio\PokeBot2\PokemonGo.RocketAPI.Window\obj\Debug\PokemonGo.RocketAPI.Window.csproj.GenerateResource.Cache
+C:\Users\f.devigili\Documents\GitHubVisualStudio\PokeBot2\PokemonGo.RocketAPI.Window\bin\Debug\external.config
+C:\Users\f.devigili\Documents\GitHubVisualStudio\PokeBot2\PokemonGo.RocketAPI.Window\bin\Debug\PokemonGo.RocketAPI.Window.exe.config
+C:\Users\f.devigili\Documents\GitHubVisualStudio\PokeBot2\PokemonGo.RocketAPI.Window\bin\Debug\PokemonGo.RocketAPI.Window.exe
+C:\Users\f.devigili\Documents\GitHubVisualStudio\PokeBot2\PokemonGo.RocketAPI.Window\bin\Debug\PokemonGo.RocketAPI.Window.pdb
+C:\Users\f.devigili\Documents\GitHubVisualStudio\PokeBot2\PokemonGo.RocketAPI.Window\bin\Debug\Google.Protobuf.dll
+C:\Users\f.devigili\Documents\GitHubVisualStudio\PokeBot2\PokemonGo.RocketAPI.Window\bin\Debug\Newtonsoft.Json.dll
+C:\Users\f.devigili\Documents\GitHubVisualStudio\PokeBot2\PokemonGo.RocketAPI.Window\bin\Debug\Pokemon Go Rocket API.dll
+C:\Users\f.devigili\Documents\GitHubVisualStudio\PokeBot2\PokemonGo.RocketAPI.Window\bin\Debug\S2Geometry.dll
+C:\Users\f.devigili\Documents\GitHubVisualStudio\PokeBot2\PokemonGo.RocketAPI.Window\bin\Debug\System.VarintBitConverter.dll
+C:\Users\f.devigili\Documents\GitHubVisualStudio\PokeBot2\PokemonGo.RocketAPI.Window\bin\Debug\System.Net.Http.Formatting.dll
+C:\Users\f.devigili\Documents\GitHubVisualStudio\PokeBot2\PokemonGo.RocketAPI.Window\bin\Debug\C5.dll
+C:\Users\f.devigili\Documents\GitHubVisualStudio\PokeBot2\PokemonGo.RocketAPI.Window\bin\Debug\Pokemon Go Rocket API.pdb
+C:\Users\f.devigili\Documents\GitHubVisualStudio\PokeBot2\PokemonGo.RocketAPI.Window\bin\Debug\Google.Protobuf.xml
+C:\Users\f.devigili\Documents\GitHubVisualStudio\PokeBot2\PokemonGo.RocketAPI.Window\bin\Debug\Newtonsoft.Json.xml
+C:\Users\f.devigili\Documents\GitHubVisualStudio\PokeBot2\PokemonGo.RocketAPI.Window\bin\Debug\S2Geometry.xml
+C:\Users\f.devigili\Documents\GitHubVisualStudio\PokeBot2\PokemonGo.RocketAPI.Window\bin\Debug\System.Net.Http.Formatting.xml
+C:\Users\f.devigili\Documents\GitHubVisualStudio\PokeBot2\PokemonGo.RocketAPI.Window\bin\Debug\C5.xml
+C:\Users\f.devigili\Documents\GitHubVisualStudio\PokeBot2\PokemonGo.RocketAPI.Window\obj\Debug\PokemonGo.RocketAPI.Window.exe
+C:\Users\f.devigili\Documents\GitHubVisualStudio\PokeBot2\PokemonGo.RocketAPI.Window\obj\Debug\PokemonGo.RocketAPI.Window.pdb

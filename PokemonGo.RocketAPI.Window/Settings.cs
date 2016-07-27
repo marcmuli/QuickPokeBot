@@ -74,6 +74,14 @@ namespace PokemonGo.RocketAPI.Console
             set { SetSetting(value); }
         }
 
+        public int ItemRecyclingCount
+        {
+            get
+            {
+                throw new NotImplementedException();
+            }
+        }
+
         private string GetSetting([CallerMemberName] string key = null)
         {
             return ConfigurationManager.AppSettings[key];
