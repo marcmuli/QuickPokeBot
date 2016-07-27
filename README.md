@@ -1,6 +1,10 @@
 ## Based on shiftcodeYT PokeBot2 
 Faster and riskier approach to farming, up to 120K exp per hour without eggs or evolve.
 
+
+![](https://cloud.githubusercontent.com/assets/5583580/17182425/be384104-5423-11e6-9193-870a311fce4f.png)
+
+
 ##Features:
 - [x] Farm Pokestops
 - [x] Catch Pokemon
