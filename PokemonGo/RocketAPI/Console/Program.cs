@@ -1,25 +1,16 @@
 #region
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Net;
-using System.Reflection;
-using System.Text.RegularExpressions;
-using System.Threading;
-using System.Threading.Tasks;
 using AllEnum;
 using PokemonGo.RocketAPI.Enums;
 using PokemonGo.RocketAPI.Exceptions;
 using PokemonGo.RocketAPI.Extensions;
 using PokemonGo.RocketAPI.GeneratedCode;
-using System.Net.Http;
-using System.Text;
-using Google.Protobuf;
-using PokemonGo.RocketAPI.Helpers;
+using System;
+using System.Collections.Generic;
 using System.IO;
-using System.Configuration;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 #endregion
 
@@ -55,16 +46,6 @@ namespace PokemonGo.RocketAPI.Console
         {
             foreach (var pokemon in pokemonToEvolve)
             {
-                /*
-                enum Holoholo.Rpc.Types.EvolvePokemonOutProto.Result {
-	                UNSET = 0;
-	                SUCCESS = 1;
-	                FAILED_POKEMON_MISSING = 2;
-	                FAILED_INSUFFICIENT_RESOURCES = 3;
-	                FAILED_POKEMON_CANNOT_EVOLVE = 4;
-	                FAILED_POKEMON_IS_DEPLOYED = 5;
-                }
-                }*/
 
                 var countOfEvolvedUnits = 0;
                 var xpCount = 0;
@@ -86,14 +67,9 @@ namespace PokemonGo.RocketAPI.Console
                     else
                     {
                         var result = evolvePokemonOutProto.Result;
-                        /*
-                        ColoredConsoleWrite(ConsoleColor.White, $"Failed to evolve {pokemon.PokemonId}. " +
-                                                 $"EvolvePokemonOutProto.Result was {result}");
-
-                        ColoredConsoleWrite(ConsoleColor.White, $"Due to above error, stopping evolving {pokemon.PokemonId}");
-                        */
                     }
                 } while (evolvePokemonOutProto.Result == 1);
+
                 if (countOfEvolvedUnits > 0)
                     ColoredConsoleWrite(ConsoleColor.Cyan,
                         $"[{DateTime.Now.ToString("HH:mm:ss")}] Evolved {countOfEvolvedUnits} pieces of {pokemon.PokemonId} for {xpCount}xp");
@@ -134,6 +110,8 @@ namespace PokemonGo.RocketAPI.Console
 
                 ColoredConsoleWrite(ConsoleColor.Cyan, "\n" + Language.GetPhrases()["farming_started"]);
                 ColoredConsoleWrite(ConsoleColor.Yellow, "----------------------------");
+
+                ColoredConsoleWrite(ConsoleColor.Red, "TransferType loading");
                 if (ClientSettings.TransferType == "leaveStrongest")
                     await TransferAllButStrongestUnwantedPokemon(client);
                 else if (ClientSettings.TransferType == "all")
@@ -144,14 +122,17 @@ namespace PokemonGo.RocketAPI.Console
                     await TransferAllWeakPokemon(client, ClientSettings.TransferCPThreshold);
                 else
                     ColoredConsoleWrite(ConsoleColor.DarkGray, $"[{DateTime.Now.ToString("HH:mm:ss")}] {Language.GetPhrases()["transfering_disabled"]}");
+                ColoredConsoleWrite(ConsoleColor.Red, "TransferType loaded");
                 if (ClientSettings.EvolveAllGivenPokemons)
                     await EvolveAllGivenPokemons(client, pokemons);
-
+                ColoredConsoleWrite(ConsoleColor.Red, "Recycling Items");
                 client.RecycleItems(client);
-
+                ColoredConsoleWrite(ConsoleColor.Red, "Finished recycling");
                 await Task.Delay(5000);
                 await ConsoleLevelTitle(profile.Profile.Username, client);
                 PrintLevel(client);
+
+                ColoredConsoleWrite(ConsoleColor.Red, "ExecuteFarmingPokestopsAndPokemons");
                 await ExecuteFarmingPokestopsAndPokemons(client);
                 ColoredConsoleWrite(ConsoleColor.Red, $"[{DateTime.Now.ToString("HH:mm:ss")}] {Language.GetPhrases()["no_nearby_loc_found"]}");
                 await Task.Delay(10000);
@@ -234,10 +215,22 @@ namespace PokemonGo.RocketAPI.Console
             var mapObjects = await client.GetMapObjects();
 
             var pokeStops = mapObjects.MapCells.SelectMany(i => i.Forts).Where(i => i.Type == FortType.Checkpoint && i.CooldownCompleteTimestampMs < DateTime.UtcNow.ToUnixTime());
+            ColoredConsoleWrite(ConsoleColor.Red, $"[{DateTime.Now.ToString("HH:mm:ss")}] Number of Pokestop: {pokeStops.Count()}");
+            Location startLocation = new Location(client.getCurrentLat(), client.getCurrentLng());
+            IList<FortData> query = pokeStops.ToList();
 
-            foreach (var pokeStop in pokeStops)
+            while (query.Count > 0)
             {
-                var update = await client.UpdatePlayerLocation(pokeStop.Latitude, pokeStop.Longitude);
+                ColoredConsoleWrite(ConsoleColor.Red, $"[{DateTime.Now.ToString("HH:mm:ss")}] Number of Pokestop in this zone: {query.Count}");
+                startLocation = new Location(client.getCurrentLat(), client.getCurrentLng());
+                query = query.OrderBy(pS => Spheroid.CalculateDistanceBetweenLocations(startLocation, new Location(pS.Latitude, pS.Longitude))).ToList();
+                var pokeStop = query.First();
+                query.RemoveAt(0);
+                Location endLocation = new Location(pokeStop.Latitude, pokeStop.Longitude);
+                var distanceToPokestop = Spheroid.CalculateDistanceBetweenLocations(startLocation, endLocation);
+                var update = await client.UpdatePlayerLocation(endLocation.latitude, endLocation.longitude);
+                await Task.Delay((int)(25.0 * distanceToPokestop));
+
                 var fortInfo = await client.GetFort(pokeStop.Id, pokeStop.Latitude, pokeStop.Longitude);
                 var fortSearch = await client.SearchFort(pokeStop.Id, pokeStop.Latitude, pokeStop.Longitude);
 
@@ -257,12 +250,13 @@ namespace PokemonGo.RocketAPI.Console
 
                 if (fortSearch.ExperienceAwarded != 0)
                     TotalExperience += (fortSearch.ExperienceAwarded);
-                await Task.Delay(15000);
+
                 await ExecuteCatchAllNearbyPokemons(client);
             }
         }
 
-        private static string GetFriendlyItemsString(IEnumerable<FortSearchResponse.Types.ItemAward> items)
+
+    private static string GetFriendlyItemsString(IEnumerable<FortSearchResponse.Types.ItemAward> items)
         {
             var enumerable = items as IList<FortSearchResponse.Types.ItemAward> ?? items.ToList();
 
