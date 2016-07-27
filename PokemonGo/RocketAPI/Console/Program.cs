@@ -135,8 +135,9 @@ namespace PokemonGo.RocketAPI.Console
                 ColoredConsoleWrite(ConsoleColor.Red, "ExecuteFarmingPokestopsAndPokemons");
                 await ExecuteFarmingPokestopsAndPokemons(client);
                 ColoredConsoleWrite(ConsoleColor.Red, $"[{DateTime.Now.ToString("HH:mm:ss")}] {Language.GetPhrases()["no_nearby_loc_found"]}");
-                await Task.Delay(10000);
+                
                 Execute();
+                await Task.Delay(30000);
             }
             catch (TaskCanceledException tce) { ColoredConsoleWrite(ConsoleColor.White, $"[{DateTime.Now.ToString("HH:mm:ss")}] {Language.GetPhrases()["task_canceled_ex"]}"); Execute(); }
             catch (UriFormatException ufe) { ColoredConsoleWrite(ConsoleColor.White, $"[{DateTime.Now.ToString("HH:mm:ss")}] {Language.GetPhrases()["sys_uri_format_ex"]}"); Execute(); }
@@ -193,6 +194,7 @@ namespace PokemonGo.RocketAPI.Console
                 {
                     ColoredConsoleWrite(ConsoleColor.Green, $"[{DateTime.Now.ToString("HH:mm:ss")}] {Language.GetPhrases()["caught_pokemon"].Replace("[pokemon]", pokemonName).Replace("[cp]", Convert.ToString(encounterPokemonResponse?.WildPokemon?.PokemonData?.Cp))}");
                     TotalPokemon++;
+                    TotalExperience += 210;
                 }
                 else
                     ColoredConsoleWrite(ConsoleColor.Red, $"[{DateTime.Now.ToString("HH:mm:ss")}] {Language.GetPhrases()["pokemon_got_away"].Replace("[pokemon]", pokemonName).Replace("[cp]", Convert.ToString(encounterPokemonResponse?.WildPokemon?.PokemonData?.Cp))}");
@@ -206,7 +208,7 @@ namespace PokemonGo.RocketAPI.Console
                 else if (ClientSettings.TransferType == "cp")
                     await TransferAllWeakPokemon(client, ClientSettings.TransferCPThreshold);
 
-                await Task.Delay(3000);
+                await Task.Delay(1500);
             }
         }
 
@@ -221,7 +223,6 @@ namespace PokemonGo.RocketAPI.Console
 
             while (query.Count > 0)
             {
-                ColoredConsoleWrite(ConsoleColor.Red, $"[{DateTime.Now.ToString("HH:mm:ss")}] Number of Pokestop in this zone: {query.Count}");
                 startLocation = new Location(client.getCurrentLat(), client.getCurrentLng());
                 query = query.OrderBy(pS => Spheroid.CalculateDistanceBetweenLocations(startLocation, new Location(pS.Latitude, pS.Longitude))).ToList();
                 var pokeStop = query.First();
@@ -229,6 +230,7 @@ namespace PokemonGo.RocketAPI.Console
                 Location endLocation = new Location(pokeStop.Latitude, pokeStop.Longitude);
                 var distanceToPokestop = Spheroid.CalculateDistanceBetweenLocations(startLocation, endLocation);
                 var update = await client.UpdatePlayerLocation(endLocation.latitude, endLocation.longitude);
+                ColoredConsoleWrite(ConsoleColor.White, $"[{DateTime.Now.ToString("HH:mm:ss")}] Moved {(int)distanceToPokestop}m, wait {25.0 * (int)distanceToPokestop}ms, Number of Pokestop in this zone: {query.Count}");
                 await Task.Delay((int)(25.0 * distanceToPokestop));
 
                 var fortInfo = await client.GetFort(pokeStop.Id, pokeStop.Latitude, pokeStop.Longitude);
