@@ -1,4 +1,5 @@
-# Simple Pokemon Go Bot. C#. Based on shiftcodeYT/PokeBot2, but with faster riskier approach to farming, up to 120K exp per hour without eggs or evolve.
+## Based on shiftcodeYT PokeBot2 
+Faster and riskier approach to farming, up to 120K exp per hour without eggs or evolve.
 
 
 ##Features:
