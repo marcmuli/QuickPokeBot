@@ -221,7 +221,7 @@ namespace PokemonGo.RocketAPI.Console
             Location startLocation = new Location(client.getCurrentLat(), client.getCurrentLng());
             IList<FortData> query = pokeStops.ToList();
 
-            while (query.Count > 0)
+            while (query.Count > 10) //Ignore last 10 pokestop, usually far away
             {
                 startLocation = new Location(client.getCurrentLat(), client.getCurrentLng());
                 query = query.OrderBy(pS => Spheroid.CalculateDistanceBetweenLocations(startLocation, new Location(pS.Latitude, pS.Longitude))).ToList();
@@ -535,7 +535,7 @@ namespace PokemonGo.RocketAPI.Console
                 if (v != null)
                 {
                     int XpDiff = GetXpDiff(client, v.Level);
-                    System.Console.Title = string.Format(Username + " | Level: {0:0} - ({1:0} / {2:0}) | Stardust: {3:0}", v.Level, (v.Experience - v.PrevLevelXp - XpDiff), (v.NextLevelXp - v.PrevLevelXp - XpDiff), profile.Profile.Currency.ToArray()[1].Amount) + " | XP/Hour: " + Math.Round(TotalExperience / GetRuntime()) + " | Pokemon/Hour: " + Math.Round(TotalPokemon / GetRuntime())+ " | Lat/Lng: " + Convert.ToString(client.getCurrentLat()) + "/" + Convert.ToString(client.getCurrentLng());
+                    System.Console.Title = string.Format(Username + "|lvl:{0:0}-({1:0}/{2:0})|STD:{3:0}", v.Level, (v.Experience - v.PrevLevelXp - XpDiff), (v.NextLevelXp - v.PrevLevelXp - XpDiff), profile.Profile.Currency.ToArray()[1].Amount) + "|XP/h:" + Math.Round(TotalExperience / GetRuntime()) + "|PM/h:" + Math.Round(TotalPokemon / GetRuntime())+ "|Lat/Lng:" + Convert.ToString(client.getCurrentLat()) + "/" + Convert.ToString(client.getCurrentLng());
                 }
             await Task.Delay(1000);
             ConsoleLevelTitle(Username, client);
