@@ -79,30 +79,10 @@ namespace PokemonGo.RocketAPI
                         catchPokemonRequest);
         }
 
-        public async Task DoGoogleLogin()
+        public async Task DoGoogleLogin( string email, string password)
         {
-            // File.ReadLines(@AppDomain.CurrentDomain.BaseDirectory + @"\token.txt").First()
-            if (!File.Exists(@AppDomain.CurrentDomain.BaseDirectory + @"\token.txt") && accestoken == string.Empty)
-            {
-                var tokenResponse = await GoogleLogin.GetAccessToken();
-                _accessToken = tokenResponse.id_token;
-                //Delete token.txt in case it exists :P wait this will never happen .-.
-                File.Delete(@AppDomain.CurrentDomain.BaseDirectory + @"\token.txt");
-                File.WriteAllText(@AppDomain.CurrentDomain.BaseDirectory + @"\token.txt", $"{tokenResponse.refresh_token}");
-                Console.WriteLine($"Successfully recieved token. " + File.ReadLines(@AppDomain.CurrentDomain.BaseDirectory + @"\token.txt").First());
-                accestoken = tokenResponse.access_token;
-            }
-            else
-            {
+            _accessToken = await GoogleLoginGPSOAuth.DoLogin(email, password);
 
-                GoogleLogin.TokenResponseModel tokenResponse;
-                if (File.Exists(@AppDomain.CurrentDomain.BaseDirectory + @"\token.txt"))
-                    tokenResponse = await GoogleLogin.GetAccessToken(File.ReadLines(@AppDomain.CurrentDomain.BaseDirectory + @"\token.txt").First());
-                else
-                    tokenResponse = await GoogleLogin.GetAccessToken(accestoken);
-                _accessToken = tokenResponse.id_token;
-                _authType = AuthType.Google;
-            }
         }
 
         public async Task DoPtcLogin(string username, string password)

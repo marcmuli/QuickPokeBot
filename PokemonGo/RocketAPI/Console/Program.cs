@@ -86,7 +86,7 @@ namespace PokemonGo.RocketAPI.Console
                 if (ClientSettings.AuthType == AuthType.Ptc)
                     await client.DoPtcLogin(ClientSettings.PtcUsername, ClientSettings.PtcPassword);
                 else if (ClientSettings.AuthType == AuthType.Google)
-                    await client.DoGoogleLogin();
+                    await client.DoGoogleLogin(ClientSettings.GoogleEmail, ClientSettings.GooglePassword);
 
                 await client.SetServer();
                 var profile = await client.GetProfile();
@@ -255,10 +255,12 @@ namespace PokemonGo.RocketAPI.Console
 
                 await ExecuteCatchAllNearbyPokemons(client);
             }
+            ColoredConsoleWrite(ConsoleColor.White, $"[{DateTime.Now.ToString("HH:mm:ss")}] Finished pokestop route, reset position and restart.");
+
         }
 
 
-    private static string GetFriendlyItemsString(IEnumerable<FortSearchResponse.Types.ItemAward> items)
+        private static string GetFriendlyItemsString(IEnumerable<FortSearchResponse.Types.ItemAward> items)
         {
             var enumerable = items as IList<FortSearchResponse.Types.ItemAward> ?? items.ToList();
 

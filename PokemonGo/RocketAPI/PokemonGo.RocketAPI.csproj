@@ -83,7 +83,8 @@
     <Compile Include="Helpers\S2Helper.cs" />
     <Compile Include="Helpers\Utils.cs" />
     <Compile Include="ISettings.cs" />
-    <Compile Include="Login\GoogleLogin.cs" />
+    <Compile Include="Login\GoogleLoginGPSOAuth.cs" />
+    <Compile Include="Login\GPSOAuthSharp.cs" />
     <Compile Include="Login\PtcLogin.cs" />
     <None Include="app.config" />
     <Compile Include="Client.cs" />
