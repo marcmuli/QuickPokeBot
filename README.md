@@ -24,9 +24,10 @@ Faster and riskier approach to farming, up to 120K exp per hour without eggs or 
 - Download and extract the newest release [here](https://github.com/fededevi/QuickPokeBot/releases)
 - Edit external.config:
 - Change AuthType to "Google" or "Ptc"
-- If using "Ptc", change username and password to your login
+- If using "Ptc", change ptc username and password to your login
+- If using "Google", change google email and password to your login
+- - If using 2 step authentication you can generate a new password for the bot here: https://security.google.com/settings/security/apppasswords
 - Change DefaultLatitude and DefaultLongitude to the GPS coords of your liking
-- Change language to "english" or "german"
 - Change transfertype to "none"/"cp"/"leaveStrongest"/"duplicate"/"all"
 - If using "cp", change TransferCPtreshold to your liking
 - Change EvolveAllGivenPokemons to "true" or "false"
