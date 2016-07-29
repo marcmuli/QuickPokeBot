@@ -1,1 +1,1 @@
-Releases removed
+### 100Kexp/hour BOT, simple, fast.
