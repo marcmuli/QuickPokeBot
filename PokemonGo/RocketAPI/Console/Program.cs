@@ -93,10 +93,7 @@ namespace PokemonGo.RocketAPI.Console
                 var settings = await client.GetSettings();
                 var mapObjects = await client.GetMapObjects();
                 var inventory = await client.GetInventory();
-                var pokemons =
-                    inventory.InventoryDelta.InventoryItems.Select(i => i.InventoryItemData?.Pokemon)
-                        .Where(p => p != null && p?.PokemonId > 0);
-
+                var pokemons = inventory.InventoryDelta.InventoryItems.Select(i => i.InventoryItemData?.Pokemon).Where(p => p != null && p?.PokemonId > 0);
                 ColoredConsoleWrite(ConsoleColor.Yellow, "----------------------------");
                 ColoredConsoleWrite(ConsoleColor.Cyan, Language.GetPhrases()["account"].Replace("[username]", ClientSettings.PtcUsername));
                 ColoredConsoleWrite(ConsoleColor.Cyan, Language.GetPhrases()["password"].Replace("[password]", ClientSettings.PtcPassword + "\n"));
@@ -126,18 +123,17 @@ namespace PokemonGo.RocketAPI.Console
                 if (ClientSettings.EvolveAllGivenPokemons)
                     await EvolveAllGivenPokemons(client, pokemons);
                 ColoredConsoleWrite(ConsoleColor.Red, "Recycling Items");
-                client.RecycleItems(client);
+
                 ColoredConsoleWrite(ConsoleColor.Red, "Finished recycling");
-                await Task.Delay(5000);
+                await Task.Delay(1000);
                 await ConsoleLevelTitle(profile.Profile.Username, client);
                 PrintLevel(client);
 
                 ColoredConsoleWrite(ConsoleColor.Red, "ExecuteFarmingPokestopsAndPokemons");
                 await ExecuteFarmingPokestopsAndPokemons(client);
                 ColoredConsoleWrite(ConsoleColor.Red, $"[{DateTime.Now.ToString("HH:mm:ss")}] {Language.GetPhrases()["no_nearby_loc_found"]}");
-                
+                await Task.Delay(2000);
                 Execute();
-                await Task.Delay(30000);
             }
             catch (TaskCanceledException tce) { ColoredConsoleWrite(ConsoleColor.White, $"[{DateTime.Now.ToString("HH:mm:ss")}] {Language.GetPhrases()["task_canceled_ex"]}"); Execute(); }
             catch (UriFormatException ufe) { ColoredConsoleWrite(ConsoleColor.White, $"[{DateTime.Now.ToString("HH:mm:ss")}] {Language.GetPhrases()["sys_uri_format_ex"]}"); Execute(); }
@@ -163,6 +159,7 @@ namespace PokemonGo.RocketAPI.Console
 
         private static async Task ExecuteCatchAllNearbyPokemons(Client client)
         {
+            await Task.Delay(500);
             var mapObjects = await client.GetMapObjects();
 
             var pokemons = mapObjects.MapCells.SelectMany(i => i.CatchablePokemons);
@@ -175,9 +172,12 @@ namespace PokemonGo.RocketAPI.Console
 
             foreach (var pokemon in pokemons)
             {
-                var update = await client.UpdatePlayerLocation(pokemon.Latitude, pokemon.Longitude);
-                
+                await Task.Delay(500);
+                //var update = await client.UpdatePlayerLocation(pokemon.Latitude, pokemon.Longitude);
+                ColoredConsoleWrite(ConsoleColor.Green, $"pokemon lat {pokemon.Latitude} lon {pokemon.Longitude}");
+
                 var encounterPokemonResponse = await client.EncounterPokemon(pokemon.EncounterId, pokemon.SpawnpointId);
+                await Task.Delay(500);
                 var pokemonCP = encounterPokemonResponse?.WildPokemon?.PokemonData?.Cp;
                 CatchPokemonResponse caughtPokemonResponse;
                 do
@@ -186,7 +186,8 @@ namespace PokemonGo.RocketAPI.Console
                         await
                             client.CatchPokemon(pokemon.EncounterId, pokemon.SpawnpointId, pokemon.Latitude,
                                 pokemon.Longitude, MiscEnums.Item.ITEM_POKE_BALL, pokemonCP);
-                    ; //note: reverted from settings because this should not be part of settings but part of logic
+                    ;
+                    await Task.Delay(500);
                 } while (caughtPokemonResponse.Status == CatchPokemonResponse.Types.CatchStatus.CatchMissed);
                 string pokemonName = Language.GetPokemons()[Convert.ToString(pokemon.PokemonId)];
 
@@ -199,6 +200,7 @@ namespace PokemonGo.RocketAPI.Console
                 else
                     ColoredConsoleWrite(ConsoleColor.Red, $"[{DateTime.Now.ToString("HH:mm:ss")}] {Language.GetPhrases()["pokemon_got_away"].Replace("[pokemon]", pokemonName).Replace("[cp]", Convert.ToString(encounterPokemonResponse?.WildPokemon?.PokemonData?.Cp))}");
 
+                await Task.Delay(500);
                 if (ClientSettings.TransferType == "leaveStrongest")
                     await TransferAllButStrongestUnwantedPokemon(client);
                 else if (ClientSettings.TransferType == "all")
@@ -207,8 +209,7 @@ namespace PokemonGo.RocketAPI.Console
                     await TransferDuplicatePokemon(client);
                 else if (ClientSettings.TransferType == "cp")
                     await TransferAllWeakPokemon(client, ClientSettings.TransferCPThreshold);
-
-                await Task.Delay(1500);
+                
             }
         }
 
@@ -218,9 +219,10 @@ namespace PokemonGo.RocketAPI.Console
 
             var pokeStops = mapObjects.MapCells.SelectMany(i => i.Forts).Where(i => i.Type == FortType.Checkpoint && i.CooldownCompleteTimestampMs < DateTime.UtcNow.ToUnixTime());
             ColoredConsoleWrite(ConsoleColor.Red, $"[{DateTime.Now.ToString("HH:mm:ss")}] Number of Pokestop: {pokeStops.Count()}");
+            await Task.Delay(3000);
             Location startLocation = new Location(client.getCurrentLat(), client.getCurrentLng());
             IList<FortData> query = pokeStops.ToList();
-
+            
             while (query.Count > 10) //Ignore last 10 pokestop, usually far away
             {
                 startLocation = new Location(client.getCurrentLat(), client.getCurrentLng());
@@ -229,11 +231,17 @@ namespace PokemonGo.RocketAPI.Console
                 query.RemoveAt(0);
                 Location endLocation = new Location(pokeStop.Latitude, pokeStop.Longitude);
                 var distanceToPokestop = Spheroid.CalculateDistanceBetweenLocations(startLocation, endLocation);
+
+                await Task.Delay(1000);
                 var update = await client.UpdatePlayerLocation(endLocation.latitude, endLocation.longitude);
                 ColoredConsoleWrite(ConsoleColor.White, $"[{DateTime.Now.ToString("HH:mm:ss")}] Moved {(int)distanceToPokestop}m, wait {25.0 * (int)distanceToPokestop}ms, Number of Pokestop in this zone: {query.Count}");
                 await Task.Delay((int)(25.0 * distanceToPokestop));
 
+                await Task.Delay(500);
+                ColoredConsoleWrite(ConsoleColor.White, $"fortInfo");
+
                 var fortInfo = await client.GetFort(pokeStop.Id, pokeStop.Latitude, pokeStop.Longitude);
+                await Task.Delay(500); ColoredConsoleWrite(ConsoleColor.White, $"fortSearch");
                 var fortSearch = await client.SearchFort(pokeStop.Id, pokeStop.Latitude, pokeStop.Longitude);
 
                 StringWriter PokeStopOutput = new StringWriter();
@@ -252,8 +260,9 @@ namespace PokemonGo.RocketAPI.Console
 
                 if (fortSearch.ExperienceAwarded != 0)
                     TotalExperience += (fortSearch.ExperienceAwarded);
-
+                await Task.Delay(1000); ColoredConsoleWrite(ConsoleColor.White, $"ExecuteCatchAllNearbyPokemons");
                 await ExecuteCatchAllNearbyPokemons(client);
+                
             }
             ColoredConsoleWrite(ConsoleColor.White, $"[{DateTime.Now.ToString("HH:mm:ss")}] Finished pokestop route, reset position and restart.");
 
