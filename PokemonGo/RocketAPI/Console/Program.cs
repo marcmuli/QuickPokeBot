@@ -20,11 +20,14 @@ namespace PokemonGo.RocketAPI.Console
     {
         private static readonly ISettings ClientSettings = new Settings();
         private static Thread commandthread;
-        static int Currentlevel = -1;
-        private static int TotalExperience = 0;
-        private static int TotalPokemon = 0;
         private static DateTime TimeStarted = DateTime.Now;
         public static DateTime InitSessionDateTime = DateTime.Now;
+        public static int defaultDelay = 200;
+        public static int expDone = 0;
+        public static int pokemonCaught = 0;
+
+        static string userName;
+
         public static double GetRuntime()
         {
             return ((DateTime.Now - TimeStarted).TotalSeconds) / 3600;
@@ -41,41 +44,23 @@ namespace PokemonGo.RocketAPI.Console
         {
             return (DateTime.Now - InitSessionDateTime).ToString(@"dd\.hh\:mm\:ss");
         }
-
-        private static async Task EvolveAllGivenPokemons(Client client, IEnumerable<PokemonData> pokemonToEvolve)
+        public static void updateTitle()
         {
-            foreach (var pokemon in pokemonToEvolve)
-            {
+            System.Console.Title = $"{userName} | Exp/h {(int)(expDone / GetRuntime())} | Exp {expDone} | Pmon {pokemonCaught} | Pmon/h {(int)(pokemonCaught / GetRuntime())} ";
+        }
 
-                var countOfEvolvedUnits = 0;
-                var xpCount = 0;
+        public static void addExp(int exp)
+        {
 
-                EvolvePokemonOut evolvePokemonOutProto;
-                do
-                {
-                    evolvePokemonOutProto = await client.EvolvePokemon(pokemon.Id);
-                    //todo: someone check whether this still works
+            expDone += exp;
+            updateTitle();
+        }
 
-                    if (evolvePokemonOutProto.Result == 1)
-                    {
-                        ColoredConsoleWrite(ConsoleColor.Cyan,
-                            $"[{DateTime.Now.ToString("HH:mm:ss")}] Evolved {pokemon.PokemonId} successfully for {evolvePokemonOutProto.ExpAwarded}xp");
-
-                        countOfEvolvedUnits++;
-                        xpCount += evolvePokemonOutProto.ExpAwarded;
-                    }
-                    else
-                    {
-                        var result = evolvePokemonOutProto.Result;
-                    }
-                } while (evolvePokemonOutProto.Result == 1);
-
-                if (countOfEvolvedUnits > 0)
-                    ColoredConsoleWrite(ConsoleColor.Cyan,
-                        $"[{DateTime.Now.ToString("HH:mm:ss")}] Evolved {countOfEvolvedUnits} pieces of {pokemon.PokemonId} for {xpCount}xp");
-
-                await Task.Delay(3000);
-            }
+        public static void addPokemon()
+        {
+            expDone += 210;
+            pokemonCaught++;
+            updateTitle();
         }
 
         private static async void Execute()
@@ -84,38 +69,40 @@ namespace PokemonGo.RocketAPI.Console
             try
             {
                 defaultDelay = Int32.Parse(ClientSettings.requestsDelay);
-
+                Client.requestDelay = defaultDelay;
+                await Task.Delay(defaultDelay);
                 if (ClientSettings.AuthType == AuthType.Ptc)
                     await client.DoPtcLogin(ClientSettings.PtcUsername, ClientSettings.PtcPassword);
                 else if (ClientSettings.AuthType == AuthType.Google)
                     await client.DoGoogleLogin(ClientSettings.GoogleEmail, ClientSettings.GooglePassword);
 
-                await Task.Delay(defaultDelay); ColoredConsoleWrite(ConsoleColor.White, $"SetServer");
+
+                await Task.Delay(defaultDelay); //ColoredConsoleWrite(ConsoleColor.White, $"SetServer");
                 await client.SetServer();
-                await Task.Delay(defaultDelay); ColoredConsoleWrite(ConsoleColor.White, $"GetProfile");
+                await Task.Delay(defaultDelay); //ColoredConsoleWrite(ConsoleColor.White, $"GetProfile");
                 var profile = await client.GetProfile();
-                await Task.Delay(defaultDelay); ColoredConsoleWrite(ConsoleColor.White, $"GetSettings");
+                userName = profile.Profile.Username;
+                await Task.Delay(defaultDelay); //ColoredConsoleWrite(ConsoleColor.White, $"GetSettings");
                 var settings = await client.GetSettings();
-                await Task.Delay(defaultDelay); ColoredConsoleWrite(ConsoleColor.White, $"GetMapObjects");
+                await Task.Delay(defaultDelay); //ColoredConsoleWrite(ConsoleColor.White, $"GetMapObjects");
                 var mapObjects = await client.GetMapObjects();
-                await Task.Delay(defaultDelay); ColoredConsoleWrite(ConsoleColor.White, $"GetInventory");
+                await Task.Delay(defaultDelay); //ColoredConsoleWrite(ConsoleColor.White, $"GetInventory");
                 var inventory = await client.GetInventory();
                 var pokemons = inventory.InventoryDelta.InventoryItems.Select(i => i.InventoryItemData?.Pokemon).Where(p => p != null && p?.PokemonId > 0);
-                await Task.Delay(defaultDelay); ColoredConsoleWrite(ConsoleColor.White, $"Transfer PK");
+                
+                await Task.Delay(defaultDelay); //ColoredConsoleWrite(ConsoleColor.White, $"Transfer PK");
                 await TransferDuplicatePokemon(client);
 
-
-
-                ColoredConsoleWrite(ConsoleColor.Red, "Recycling Items");
-                await Task.Delay(defaultDelay); ColoredConsoleWrite(ConsoleColor.White, $"client.RecycleItems(client)");
+                //ColoredConsoleWrite(ConsoleColor.Red, "Recycling Items");
+                await Task.Delay(defaultDelay); //ColoredConsoleWrite(ConsoleColor.White, $"client.RecycleItems(client)");
                 await client.RecycleItems(client);
 
 
-                ColoredConsoleWrite(ConsoleColor.Red, "ExecuteFarmingPokestopsAndPokemons");
+                //ColoredConsoleWrite(ConsoleColor.Red, "ExecuteFarmingPokestopsAndPokemons");
                 await ExecuteFarmingPokestopsAndPokemons(client);
 
-                ColoredConsoleWrite(ConsoleColor.Red, $"[{DateTime.Now.ToString("HH:mm:ss")}] {Language.GetPhrases()["no_nearby_loc_found"]}");
-                await Task.Delay(2000);
+                ColoredConsoleWrite(ConsoleColor.Red, $"Finished Farming this zone. Wait 15 seconds then restart.");
+                await Task.Delay(15000);
                 Execute();
             }
             catch (TaskCanceledException tce) { ColoredConsoleWrite(ConsoleColor.White, $"[{DateTime.Now.ToString("HH:mm:ss")}] {Language.GetPhrases()["task_canceled_ex"]}"); Execute(); }
@@ -141,27 +128,21 @@ namespace PokemonGo.RocketAPI.Console
 
         private static async Task ExecuteCatchAllNearbyPokemons(Client client)
         {
-            await Task.Delay(defaultDelay); ColoredConsoleWrite(ConsoleColor.White, $"GetMapObjects (pokemons)");
+            await Task.Delay(defaultDelay); //ColoredConsoleWrite(ConsoleColor.White, $"GetMapObjects (pokemons)");
             var mapObjects = await client.GetMapObjects();
 
             var pokemons = mapObjects.MapCells.SelectMany(i => i.CatchablePokemons);
 
-            var inventory2 = await client.GetInventory();
-            var pokemons2 = inventory2.InventoryDelta.InventoryItems
-                .Select(i => i.InventoryItemData?.Pokemon)
-                .Where(p => p != null && p?.PokemonId > 0)
-                .ToArray();
-
             foreach (var pokemon in pokemons)
             {
-                await Task.Delay(defaultDelay); ColoredConsoleWrite(ConsoleColor.White, $"EncounterPokemon");
+                await Task.Delay(defaultDelay); //ColoredConsoleWrite(ConsoleColor.White, $"EncounterPokemon");
                 var encounterPokemonResponse = await client.EncounterPokemon(pokemon.EncounterId, pokemon.SpawnpointId);
                 
                 var pokemonCP = encounterPokemonResponse?.WildPokemon?.PokemonData?.Cp;
                 CatchPokemonResponse caughtPokemonResponse;
                 do
                 {
-                    await Task.Delay(defaultDelay); ColoredConsoleWrite(ConsoleColor.White, $"CatchPokemon");
+                    await Task.Delay(defaultDelay); //ColoredConsoleWrite(ConsoleColor.White, $"CatchPokemon");
                     caughtPokemonResponse =
                         await
                             client.CatchPokemon(pokemon.EncounterId, pokemon.SpawnpointId, pokemon.Latitude,
@@ -176,30 +157,22 @@ namespace PokemonGo.RocketAPI.Console
 
                 if (caughtPokemonResponse.Status == CatchPokemonResponse.Types.CatchStatus.CatchSuccess)
                 {
-                    ColoredConsoleWrite(ConsoleColor.Green, $"[{DateTime.Now.ToString("HH:mm:ss")}] {Language.GetPhrases()["caught_pokemon"].Replace("[pokemon]", pokemonName).Replace("[cp]", Convert.ToString(encounterPokemonResponse?.WildPokemon?.PokemonData?.Cp))}");
-                    TotalPokemon++;
-                    expDone += 210;
-                    ColoredConsoleWrite(ConsoleColor.Red, $"Exp/H: {expDone / GetRuntime()}");
+                    ColoredConsoleWrite(ConsoleColor.Green, $"{Language.GetPhrases()["caught_pokemon"].Replace("[pokemon]", pokemonName).Replace("[cp]", Convert.ToString(encounterPokemonResponse?.WildPokemon?.PokemonData?.Cp))}");
+                    addPokemon();
                 }
                 else
-                    ColoredConsoleWrite(ConsoleColor.Red, $"[{DateTime.Now.ToString("HH:mm:ss")}] {Language.GetPhrases()["pokemon_got_away"].Replace("[pokemon]", pokemonName).Replace("[cp]", Convert.ToString(encounterPokemonResponse?.WildPokemon?.PokemonData?.Cp))}");
-
-                await Task.Delay(defaultDelay); ColoredConsoleWrite(ConsoleColor.White, $"Transfer");
-                await TransferDuplicatePokemon(client);
-
+                    ColoredConsoleWrite(ConsoleColor.Red, $"{Language.GetPhrases()["pokemon_got_away"].Replace("[pokemon]", pokemonName).Replace("[cp]", Convert.ToString(encounterPokemonResponse?.WildPokemon?.PokemonData?.Cp))}");
                 
             }
         }
-        public static int defaultDelay = 200;
 
-        public static int expDone = 0;
         private static async Task ExecuteFarmingPokestopsAndPokemons(Client client)
         {
-            await Task.Delay(defaultDelay); ColoredConsoleWrite(ConsoleColor.White, $"GetMapObjects (Pokestops)");
+            await Task.Delay(defaultDelay); //ColoredConsoleWrite(ConsoleColor.White, $"GetMapObjects (Pokestops)");
             var mapObjects = await client.GetMapObjects();
 
             var pokeStops = mapObjects.MapCells.SelectMany(i => i.Forts).Where(i => i.Type == FortType.Checkpoint && i.CooldownCompleteTimestampMs < DateTime.UtcNow.ToUnixTime());
-            ColoredConsoleWrite(ConsoleColor.Red, $"[{DateTime.Now.ToString("HH:mm:ss")}] Number of Pokestop: {pokeStops.Count()}");
+            ColoredConsoleWrite(ConsoleColor.Red, $"Number of Pokestop: {pokeStops.Count()}");
 
             Location startLocation = new Location(client.getCurrentLat(), client.getCurrentLng());
             IList<FortData> query = pokeStops.ToList();
@@ -210,42 +183,48 @@ namespace PokemonGo.RocketAPI.Console
                 query = query.OrderBy(pS => Spheroid.CalculateDistanceBetweenLocations(startLocation, new Location(pS.Latitude, pS.Longitude))).ToList();
                 var pokeStop = query.First();
                 query.RemoveAt(0);
-                Location endLocation = new Location(pokeStop.Latitude, pokeStop.Longitude);
-                var distanceToPokestop = Spheroid.CalculateDistanceBetweenLocations(startLocation, endLocation);
 
-                await Task.Delay(defaultDelay); ColoredConsoleWrite(ConsoleColor.White, $"UpdatePlayerLocation");
-                var update = await client.UpdatePlayerLocation(endLocation.latitude, endLocation.longitude);
-                ColoredConsoleWrite(ConsoleColor.White, $"[{DateTime.Now.ToString("HH:mm:ss")}] Moved {(int)distanceToPokestop}m, wait {25.0 * (int)distanceToPokestop}ms, Number of Pokestop in this zone: {query.Count}");
-
-                int delay = (int)(25.0 * distanceToPokestop);
-                if (delay < defaultDelay) delay = defaultDelay;
-                await Task.Delay(delay);  ColoredConsoleWrite(ConsoleColor.White, $"fortInfo");
+                await Task.Delay(defaultDelay); //ColoredConsoleWrite(ConsoleColor.White, $"UpdatePlayerLocation");
+                var update = await client.UpdatePlayerLocation(pokeStop.Latitude, pokeStop.Longitude);
+                //ColoredConsoleWrite(ConsoleColor.White, $"[{DateTime.Now.ToString("HH:mm:ss")}] Moved {(int)distanceToPokestop}m, wait {25.0 * (int)distanceToPokestop}ms, Number of Pokestop in this zone: {query.Count}");
 
 
-                var fortInfo = await client.GetFort(pokeStop.Id, pokeStop.Latitude, pokeStop.Longitude);
-                await Task.Delay(defaultDelay); ColoredConsoleWrite(ConsoleColor.White, $"fortSearch");
-                var fortSearch = await client.SearchFort(pokeStop.Id, pokeStop.Latitude, pokeStop.Longitude);
 
-                StringWriter PokeStopOutput = new StringWriter();
-                PokeStopOutput.Write($"[{DateTime.Now.ToString("HH:mm:ss")}] ");
-                if (fortInfo.Name != string.Empty)
-                    PokeStopOutput.Write(Language.GetPhrases()["pokestop"].Replace("[pokestop]", fortInfo.Name));
-                if (fortSearch.ExperienceAwarded != 0)
-                    PokeStopOutput.Write($", {Language.GetPhrases()["xp"].Replace("[xp]", Convert.ToString(fortSearch.ExperienceAwarded))}");
-                if (fortSearch.GemsAwarded != 0)
-                    PokeStopOutput.Write($", {Language.GetPhrases()["gem"].Replace("[gem]", Convert.ToString(fortSearch.GemsAwarded))}");
-                if (fortSearch.PokemonDataEgg != null)
-                    PokeStopOutput.Write($", {Language.GetPhrases()["egg"].Replace("[egg]", Convert.ToString(fortSearch.PokemonDataEgg))}");
-                if (GetFriendlyItemsString(fortSearch.ItemsAwarded) != string.Empty)
-                    PokeStopOutput.Write($", {Language.GetPhrases()["item"].Replace("[item]", GetFriendlyItemsString(fortSearch.ItemsAwarded))}");
-                ColoredConsoleWrite(ConsoleColor.Cyan, PokeStopOutput.ToString());
 
-                expDone += fortSearch.ExperienceAwarded;
-                ColoredConsoleWrite(ConsoleColor.Red, $"Exp/H: {expDone/GetRuntime()}");
+                var pokeStopExp = 0;
+                do
+                {
+                    await Task.Delay(defaultDelay);  //ColoredConsoleWrite(ConsoleColor.White, $"fortInfo");
+                    var fortInfo = await client.GetFort(pokeStop.Id, pokeStop.Latitude, pokeStop.Longitude);
+                    await Task.Delay(defaultDelay);
+                    var fortSearch = await client.SearchFort(pokeStop.Id, pokeStop.Latitude, pokeStop.Longitude);
+                    StringWriter PokeStopOutput = new StringWriter();
 
-                if (fortSearch.ExperienceAwarded != 0)
-                    TotalExperience += (fortSearch.ExperienceAwarded);
+                    if (fortInfo.Name != string.Empty)
+                        PokeStopOutput.Write($"PS {query.Count} | ");
+                    if (fortSearch.ExperienceAwarded != 0)
+                    {
+                        PokeStopOutput.Write($"XP: {Convert.ToString(fortSearch.ExperienceAwarded)}" );
+                    }
+                    else
+                    {
+                        System.Console.ForegroundColor = ConsoleColor.Cyan;
+                        System.Console.Write(".");
+                    }
+                    if (fortSearch.GemsAwarded != 0)
+                        PokeStopOutput.Write($", {Language.GetPhrases()["gem"].Replace("[gem]", Convert.ToString(fortSearch.GemsAwarded))}");
+                    if (fortSearch.PokemonDataEgg != null)
+                        PokeStopOutput.Write($", {Language.GetPhrases()["egg"].Replace("[egg]", Convert.ToString(fortSearch.PokemonDataEgg))}");
+                    if (GetFriendlyItemsString(fortSearch.ItemsAwarded) != string.Empty)
+                        PokeStopOutput.Write($", {Language.GetPhrases()["item"].Replace("[item]", GetFriendlyItemsString(fortSearch.ItemsAwarded))}");
+                    pokeStopExp = fortSearch.ExperienceAwarded;
+                    if (fortSearch.ExperienceAwarded != 0)
+                        ColoredConsoleWrite(ConsoleColor.Cyan, PokeStopOutput.ToString());
+                    addExp(fortSearch.ExperienceAwarded);
+                } while (pokeStopExp == 0);
 
+
+                
                 await ExecuteCatchAllNearbyPokemons(client);
                 
             }
@@ -325,6 +304,7 @@ namespace PokemonGo.RocketAPI.Console
 
         private static async Task TransferDuplicatePokemon(Client client)
         {
+            await Task.Delay(defaultDelay);
             var inventory = await client.GetInventory();
             var allpokemons =
                 inventory.InventoryDelta.InventoryItems.Select(i => i.InventoryItemData?.Pokemon)
@@ -341,10 +321,10 @@ namespace PokemonGo.RocketAPI.Console
                     var dubpokemon = dupes.ElementAt(i).ElementAt(j).value;
                     if (dubpokemon.Favorite == 0)
                     {
-                        await Task.Delay(defaultDelay); ColoredConsoleWrite(ConsoleColor.White, $"TransferPokemon");
+                        await Task.Delay(defaultDelay); //ColoredConsoleWrite(ConsoleColor.White, $"TransferPokemon");
                         var transfer = await client.TransferPokemon(dubpokemon.Id);
                         ColoredConsoleWrite(ConsoleColor.DarkGreen,
-                            $"[{DateTime.Now.ToString("HH:mm:ss")}] {Language.GetPhrases()["transferred_low_pokemon"].Replace("[pokemon]", Language.GetPokemons()[Convert.ToString(dubpokemon.PokemonId)]).Replace("[cp]", Convert.ToString(dubpokemon.Cp)).Replace("[high_cp]", Convert.ToString(dupes.ElementAt(i).Last().value.Cp))}");
+                            $"{Language.GetPhrases()["transferred_low_pokemon"].Replace("[pokemon]", Language.GetPokemons()[Convert.ToString(dubpokemon.PokemonId)]).Replace("[cp]", Convert.ToString(dubpokemon.Cp)).Replace("[high_cp]", Convert.ToString(dupes.ElementAt(i).Last().value.Cp))}");
 
                     }
                 }

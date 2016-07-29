@@ -21,6 +21,7 @@ namespace PokemonGo.RocketAPI
 {
     public class Client
     {
+        public static int requestDelay = 200;
         private readonly HttpClient _httpClient;
         private ISettings _settings;
         private string _accessToken;
@@ -133,6 +134,7 @@ namespace PokemonGo.RocketAPI
 
         private async Task<MiscEnums.Item> GetBestBall(int? pokemonCP)
         {
+            await Task.Delay(requestDelay);
             var inventory = await GetInventory();
 
             var ballCollection = inventory.InventoryDelta.InventoryItems.Select(i => i.InventoryItemData?.Item)
@@ -156,41 +158,34 @@ namespace PokemonGo.RocketAPI
             // Use better balls for high CP pokemon
             if (masterBallsCount > 0 && pokemonCP >= 1000)
             {
-                ColoredConsoleWrite(ConsoleColor.Green, $"[{DateTime.Now.ToString("HH:mm:ss")}] Master Ball is being used");
                 return MiscEnums.Item.ITEM_MASTER_BALL;
             }
 
             if (ultraBallsCount > 0 && pokemonCP >= 600)
             {
-                ColoredConsoleWrite(ConsoleColor.Green, $"[{DateTime.Now.ToString("HH:mm:ss")}] Ultra Ball is being used");
                 return MiscEnums.Item.ITEM_ULTRA_BALL;
             }
 
             if (greatBallsCount > 0 && pokemonCP >= 350)
             {
-                ColoredConsoleWrite(ConsoleColor.Green, $"[{DateTime.Now.ToString("HH:mm:ss")}] Great Ball is being used");
                 return MiscEnums.Item.ITEM_GREAT_BALL;
             }
 
             // If low CP pokemon, but no more pokeballs; only use better balls if pokemon are of semi-worthy quality
             if (pokeBallsCount > 0)
             {
-                ColoredConsoleWrite(ConsoleColor.Green, $"[{DateTime.Now.ToString("HH:mm:ss")}] Poke Ball is being used");
                 return MiscEnums.Item.ITEM_POKE_BALL;
             }
             else if ((greatBallsCount < 40 && pokemonCP >= 200) || greatBallsCount >= 40)
                 {
-                    ColoredConsoleWrite(ConsoleColor.Green, $"[{DateTime.Now.ToString("HH:mm:ss")}] Great Ball is being used");
                 return MiscEnums.Item.ITEM_GREAT_BALL;
             }
             else if (ultraBallsCount > 0 && pokemonCP >= 500)
                 { 
-                ColoredConsoleWrite(ConsoleColor.Green, $"[{DateTime.Now.ToString("HH:mm:ss")}] Ultra Ball is being used");
                 return MiscEnums.Item.ITEM_ULTRA_BALL;
             }
             else if (masterBallsCount > 0 && pokemonCP >= 700)
             {
-                ColoredConsoleWrite(ConsoleColor.Green, $"[{DateTime.Now.ToString("HH:mm:ss")}] Master Ball is being used");
                 return MiscEnums.Item.ITEM_MASTER_BALL;
             }
 
@@ -294,15 +289,7 @@ namespace PokemonGo.RocketAPI
                         settingsRequest);
         }
 
-        /*num Holoholo.Rpc.Types.FortSearchOutProto.Result {
-         NO_RESULT_SET = 0;
-         SUCCESS = 1;
-         OUT_OF_RANGE = 2;
-         IN_COOLDOWN_PERIOD = 3;
-         INVENTORY_FULL = 4;
-        }*/
-
-        public async Task<FortSearchResponse> SearchFort(string fortId, double fortLat, double fortLng)
+         public async Task<FortSearchResponse> SearchFort(string fortId, double fortLat, double fortLng)
         {
             var customRequest = new Request.Types.FortSearchRequest
             {
@@ -399,7 +386,7 @@ namespace PokemonGo.RocketAPI
 
         public async Task RecycleItems(Client client)
         {
-            await Task.Delay(500); ColoredConsoleWrite(ConsoleColor.White, $"GetItems");
+            await Task.Delay(requestDelay); //ColoredConsoleWrite(ConsoleColor.White, $"GetItems");
             var items = await GetItems(client);
                 int itemCount = items.Sum(e => e.Count);
                 if (itemCount > _settings.ItemRecyclingCount)
@@ -408,14 +395,14 @@ namespace PokemonGo.RocketAPI
 
                     foreach (var item in items)
                     {
-                    await Task.Delay(500); ColoredConsoleWrite(ConsoleColor.White, $"RecycleItem)");
+                    await Task.Delay(requestDelay);// ColoredConsoleWrite(ConsoleColor.White, $"RecycleItem)");
                     var transfer = await RecycleItem((AllEnum.ItemId)item.Item_, item.Count);
-                        ColoredConsoleWrite(ConsoleColor.DarkCyan, $"[{DateTime.Now.ToString("HH:mm:ss")}] Recycled {item.Count}x {(AllEnum.ItemId)item.Item_}");
+                        ColoredConsoleWrite(ConsoleColor.DarkCyan, $"Recycled {item.Count}x {(AllEnum.ItemId)item.Item_}");
                         
                     }
                 }
                 else
-                    ColoredConsoleWrite(ConsoleColor.DarkCyan, $"[{DateTime.Now.ToString("HH:mm:ss")}] Recycling cancelled (amount lower than setting): {itemCount} / {_settings.ItemRecyclingCount}");
+                    ColoredConsoleWrite(ConsoleColor.DarkCyan, $"Recycling cancelled (amount lower than setting): {itemCount} / {_settings.ItemRecyclingCount}");
 
 
         }

@@ -31,3 +31,4 @@ C:\Users\f.devigili\Documents\GitHubVisualStudio\PokeBot2\PokemonGo\RocketAPI\bi
 C:\Users\f.devigili\Documents\GitHubVisualStudio\PokeBot2\PokemonGo\RocketAPI\bin\Debug\System.Net.Http.Formatting.xml
 C:\Users\f.devigili\Documents\GitHubVisualStudio\PokeBot2\PokemonGo\RocketAPI\obj\Debug\Pokemon Go Rocket API.dll
 C:\Users\f.devigili\Documents\GitHubVisualStudio\PokeBot2\PokemonGo\RocketAPI\obj\Debug\Pokemon Go Rocket API.pdb
+C:\Users\f.devigili\Documents\GitHubVisualStudio\PokeBot2\PokemonGo\RocketAPI\obj\Debug\PokemonGo.RocketAPI.csprojResolveAssemblyReference.cache

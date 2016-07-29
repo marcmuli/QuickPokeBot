@@ -4,6 +4,7 @@
 
 #region
 
+using System;
 using pb = global::Google.Protobuf;
 using pbc = global::Google.Protobuf.Collections;
 using pbr = global::Google.Protobuf.Reflection;
@@ -1171,6 +1172,11 @@ namespace PokemonGo.RocketAPI.GeneratedCode
         {
             return pb::JsonFormatter.ToDiagnosticString(this);
         }
+
+        public static implicit operator int (GetPlayerResponse v)
+        {
+            throw new NotImplementedException();
+        }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
@@ -1621,6 +1627,11 @@ namespace PokemonGo.RocketAPI.GeneratedCode
         public override string ToString()
         {
             return pb::JsonFormatter.ToDiagnosticString(this);
+        }
+
+        public static implicit operator Profile(GetPlayerResponse v)
+        {
+            throw new NotImplementedException();
         }
     }
 
