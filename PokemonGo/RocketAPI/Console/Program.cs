@@ -88,49 +88,30 @@ namespace PokemonGo.RocketAPI.Console
                 else if (ClientSettings.AuthType == AuthType.Google)
                     await client.DoGoogleLogin(ClientSettings.GoogleEmail, ClientSettings.GooglePassword);
 
+                await Task.Delay(defaultDelay); ColoredConsoleWrite(ConsoleColor.White, $"SetServer");
                 await client.SetServer();
+                await Task.Delay(defaultDelay); ColoredConsoleWrite(ConsoleColor.White, $"GetProfile");
                 var profile = await client.GetProfile();
+                await Task.Delay(defaultDelay); ColoredConsoleWrite(ConsoleColor.White, $"GetSettings");
                 var settings = await client.GetSettings();
+                await Task.Delay(defaultDelay); ColoredConsoleWrite(ConsoleColor.White, $"GetMapObjects");
                 var mapObjects = await client.GetMapObjects();
+                await Task.Delay(defaultDelay); ColoredConsoleWrite(ConsoleColor.White, $"GetInventory");
                 var inventory = await client.GetInventory();
                 var pokemons = inventory.InventoryDelta.InventoryItems.Select(i => i.InventoryItemData?.Pokemon).Where(p => p != null && p?.PokemonId > 0);
-                ColoredConsoleWrite(ConsoleColor.Yellow, "----------------------------");
-                ColoredConsoleWrite(ConsoleColor.Cyan, Language.GetPhrases()["account"].Replace("[username]", ClientSettings.PtcUsername));
-                ColoredConsoleWrite(ConsoleColor.Cyan, Language.GetPhrases()["password"].Replace("[password]", ClientSettings.PtcPassword + "\n"));
-                ColoredConsoleWrite(ConsoleColor.DarkGray, Language.GetPhrases()["latitude"].Replace("[latitude]", Convert.ToString(ClientSettings.DefaultLatitude)));
-                ColoredConsoleWrite(ConsoleColor.DarkGray, Language.GetPhrases()["longtitude"].Replace("[longtitude]", Convert.ToString(ClientSettings.DefaultLongitude)));
-                ColoredConsoleWrite(ConsoleColor.Yellow, "----------------------------");
-                ColoredConsoleWrite(ConsoleColor.DarkGray, Language.GetPhrases()["your_account"] + "\n");
-                ColoredConsoleWrite(ConsoleColor.DarkGray, Language.GetPhrases()["username"].Replace("[username]", profile.Profile.Username));
-                ColoredConsoleWrite(ConsoleColor.DarkGray, Language.GetPhrases()["team"].Replace("[team]", Convert.ToString(profile.Profile.Team)));
-                ColoredConsoleWrite(ConsoleColor.DarkGray, Language.GetPhrases()["stardust"].Replace("[stardust]", Convert.ToString(profile.Profile.Currency.ToArray()[1].Amount)));
+                await Task.Delay(defaultDelay); ColoredConsoleWrite(ConsoleColor.White, $"Transfer PK");
+                await TransferDuplicatePokemon(client);
 
-                ColoredConsoleWrite(ConsoleColor.Cyan, "\n" + Language.GetPhrases()["farming_started"]);
-                ColoredConsoleWrite(ConsoleColor.Yellow, "----------------------------");
 
-                ColoredConsoleWrite(ConsoleColor.Red, "TransferType loading");
-                if (ClientSettings.TransferType == "leaveStrongest")
-                    await TransferAllButStrongestUnwantedPokemon(client);
-                else if (ClientSettings.TransferType == "all")
-                    await TransferAllGivenPokemons(client, pokemons);
-                else if (ClientSettings.TransferType == "duplicate")
-                    await TransferDuplicatePokemon(client);
-                else if (ClientSettings.TransferType == "cp")
-                    await TransferAllWeakPokemon(client, ClientSettings.TransferCPThreshold);
-                else
-                    ColoredConsoleWrite(ConsoleColor.DarkGray, $"[{DateTime.Now.ToString("HH:mm:ss")}] {Language.GetPhrases()["transfering_disabled"]}");
-                ColoredConsoleWrite(ConsoleColor.Red, "TransferType loaded");
-                if (ClientSettings.EvolveAllGivenPokemons)
-                    await EvolveAllGivenPokemons(client, pokemons);
+
                 ColoredConsoleWrite(ConsoleColor.Red, "Recycling Items");
+                await Task.Delay(defaultDelay); ColoredConsoleWrite(ConsoleColor.White, $"client.RecycleItems(client)");
+                await client.RecycleItems(client);
 
-                ColoredConsoleWrite(ConsoleColor.Red, "Finished recycling");
-                await Task.Delay(1000);
-                await ConsoleLevelTitle(profile.Profile.Username, client);
-                PrintLevel(client);
 
                 ColoredConsoleWrite(ConsoleColor.Red, "ExecuteFarmingPokestopsAndPokemons");
                 await ExecuteFarmingPokestopsAndPokemons(client);
+
                 ColoredConsoleWrite(ConsoleColor.Red, $"[{DateTime.Now.ToString("HH:mm:ss")}] {Language.GetPhrases()["no_nearby_loc_found"]}");
                 await Task.Delay(2000);
                 Execute();
@@ -139,8 +120,6 @@ namespace PokemonGo.RocketAPI.Console
             catch (UriFormatException ufe) { ColoredConsoleWrite(ConsoleColor.White, $"[{DateTime.Now.ToString("HH:mm:ss")}] {Language.GetPhrases()["sys_uri_format_ex"]}"); Execute(); }
             catch (ArgumentOutOfRangeException aore) { ColoredConsoleWrite(ConsoleColor.White, $"[{DateTime.Now.ToString("HH:mm:ss")}] {Language.GetPhrases()["arg_out_of_range_ex"]}"); Execute(); }
             catch (ArgumentNullException ane) { ColoredConsoleWrite(ConsoleColor.White, $"[{DateTime.Now.ToString("HH:mm:ss")}] {Language.GetPhrases()["arg_null_ref"]}"); Execute(); }
-            catch (NullReferenceException nre) { ColoredConsoleWrite(ConsoleColor.White, $"[{DateTime.Now.ToString("HH:mm:ss")}] {Language.GetPhrases()["null_ref"]}"); Execute(); }
-            //await ExecuteCatchAllNearbyPokemons(client);
         }
 
         private static void CommandIOThread()
@@ -157,9 +136,10 @@ namespace PokemonGo.RocketAPI.Console
             } 
         }
 
+
         private static async Task ExecuteCatchAllNearbyPokemons(Client client)
         {
-            await Task.Delay(500);
+            await Task.Delay(defaultDelay); ColoredConsoleWrite(ConsoleColor.White, $"GetMapObjects (pokemons)");
             var mapObjects = await client.GetMapObjects();
 
             var pokemons = mapObjects.MapCells.SelectMany(i => i.CatchablePokemons);
@@ -172,22 +152,23 @@ namespace PokemonGo.RocketAPI.Console
 
             foreach (var pokemon in pokemons)
             {
-                await Task.Delay(500);
-                //var update = await client.UpdatePlayerLocation(pokemon.Latitude, pokemon.Longitude);
-                ColoredConsoleWrite(ConsoleColor.Green, $"pokemon lat {pokemon.Latitude} lon {pokemon.Longitude}");
-
+                await Task.Delay(defaultDelay); ColoredConsoleWrite(ConsoleColor.White, $"EncounterPokemon");
                 var encounterPokemonResponse = await client.EncounterPokemon(pokemon.EncounterId, pokemon.SpawnpointId);
-                await Task.Delay(500);
+                
                 var pokemonCP = encounterPokemonResponse?.WildPokemon?.PokemonData?.Cp;
                 CatchPokemonResponse caughtPokemonResponse;
                 do
                 {
+                    await Task.Delay(defaultDelay); ColoredConsoleWrite(ConsoleColor.White, $"CatchPokemon");
                     caughtPokemonResponse =
                         await
                             client.CatchPokemon(pokemon.EncounterId, pokemon.SpawnpointId, pokemon.Latitude,
                                 pokemon.Longitude, MiscEnums.Item.ITEM_POKE_BALL, pokemonCP);
                     ;
-                    await Task.Delay(500);
+                    if (caughtPokemonResponse.Status == CatchPokemonResponse.Types.CatchStatus.CatchMissed)
+                    {
+                        ColoredConsoleWrite(ConsoleColor.White, $"Retry");
+                    }
                 } while (caughtPokemonResponse.Status == CatchPokemonResponse.Types.CatchStatus.CatchMissed);
                 string pokemonName = Language.GetPokemons()[Convert.ToString(pokemon.PokemonId)];
 
@@ -195,31 +176,29 @@ namespace PokemonGo.RocketAPI.Console
                 {
                     ColoredConsoleWrite(ConsoleColor.Green, $"[{DateTime.Now.ToString("HH:mm:ss")}] {Language.GetPhrases()["caught_pokemon"].Replace("[pokemon]", pokemonName).Replace("[cp]", Convert.ToString(encounterPokemonResponse?.WildPokemon?.PokemonData?.Cp))}");
                     TotalPokemon++;
-                    TotalExperience += 210;
+                    expDone += 210;
+                    ColoredConsoleWrite(ConsoleColor.Red, $"Exp/H: {expDone / GetRuntime()}");
                 }
                 else
                     ColoredConsoleWrite(ConsoleColor.Red, $"[{DateTime.Now.ToString("HH:mm:ss")}] {Language.GetPhrases()["pokemon_got_away"].Replace("[pokemon]", pokemonName).Replace("[cp]", Convert.ToString(encounterPokemonResponse?.WildPokemon?.PokemonData?.Cp))}");
 
-                await Task.Delay(500);
-                if (ClientSettings.TransferType == "leaveStrongest")
-                    await TransferAllButStrongestUnwantedPokemon(client);
-                else if (ClientSettings.TransferType == "all")
-                    await TransferAllGivenPokemons(client, pokemons2);
-                else if (ClientSettings.TransferType == "duplicate")
-                    await TransferDuplicatePokemon(client);
-                else if (ClientSettings.TransferType == "cp")
-                    await TransferAllWeakPokemon(client, ClientSettings.TransferCPThreshold);
+                await Task.Delay(defaultDelay); ColoredConsoleWrite(ConsoleColor.White, $"Transfer");
+                await TransferDuplicatePokemon(client);
+
                 
             }
         }
+        public static int defaultDelay = 350;
 
+        public static int expDone = 0;
         private static async Task ExecuteFarmingPokestopsAndPokemons(Client client)
         {
+            await Task.Delay(defaultDelay); ColoredConsoleWrite(ConsoleColor.White, $"GetMapObjects (Pokestops)");
             var mapObjects = await client.GetMapObjects();
 
             var pokeStops = mapObjects.MapCells.SelectMany(i => i.Forts).Where(i => i.Type == FortType.Checkpoint && i.CooldownCompleteTimestampMs < DateTime.UtcNow.ToUnixTime());
             ColoredConsoleWrite(ConsoleColor.Red, $"[{DateTime.Now.ToString("HH:mm:ss")}] Number of Pokestop: {pokeStops.Count()}");
-            await Task.Delay(3000);
+
             Location startLocation = new Location(client.getCurrentLat(), client.getCurrentLng());
             IList<FortData> query = pokeStops.ToList();
             
@@ -232,16 +211,17 @@ namespace PokemonGo.RocketAPI.Console
                 Location endLocation = new Location(pokeStop.Latitude, pokeStop.Longitude);
                 var distanceToPokestop = Spheroid.CalculateDistanceBetweenLocations(startLocation, endLocation);
 
-                await Task.Delay(1000);
+                await Task.Delay(defaultDelay); ColoredConsoleWrite(ConsoleColor.White, $"UpdatePlayerLocation");
                 var update = await client.UpdatePlayerLocation(endLocation.latitude, endLocation.longitude);
                 ColoredConsoleWrite(ConsoleColor.White, $"[{DateTime.Now.ToString("HH:mm:ss")}] Moved {(int)distanceToPokestop}m, wait {25.0 * (int)distanceToPokestop}ms, Number of Pokestop in this zone: {query.Count}");
-                await Task.Delay((int)(25.0 * distanceToPokestop));
 
-                await Task.Delay(500);
-                ColoredConsoleWrite(ConsoleColor.White, $"fortInfo");
+                int delay = (int)(25.0 * distanceToPokestop);
+                if (delay < defaultDelay) delay = defaultDelay;
+                await Task.Delay(delay);  ColoredConsoleWrite(ConsoleColor.White, $"fortInfo");
+
 
                 var fortInfo = await client.GetFort(pokeStop.Id, pokeStop.Latitude, pokeStop.Longitude);
-                await Task.Delay(500); ColoredConsoleWrite(ConsoleColor.White, $"fortSearch");
+                await Task.Delay(defaultDelay); ColoredConsoleWrite(ConsoleColor.White, $"fortSearch");
                 var fortSearch = await client.SearchFort(pokeStop.Id, pokeStop.Latitude, pokeStop.Longitude);
 
                 StringWriter PokeStopOutput = new StringWriter();
@@ -258,9 +238,12 @@ namespace PokemonGo.RocketAPI.Console
                     PokeStopOutput.Write($", {Language.GetPhrases()["item"].Replace("[item]", GetFriendlyItemsString(fortSearch.ItemsAwarded))}");
                 ColoredConsoleWrite(ConsoleColor.Cyan, PokeStopOutput.ToString());
 
+                expDone += fortSearch.ExperienceAwarded;
+                ColoredConsoleWrite(ConsoleColor.Red, $"Exp/H: {expDone/GetRuntime()}");
+
                 if (fortSearch.ExperienceAwarded != 0)
                     TotalExperience += (fortSearch.ExperienceAwarded);
-                await Task.Delay(1000); ColoredConsoleWrite(ConsoleColor.White, $"ExecuteCatchAllNearbyPokemons");
+
                 await ExecuteCatchAllNearbyPokemons(client);
                 
             }
@@ -323,8 +306,6 @@ namespace PokemonGo.RocketAPI.Console
             {
                 try
                 {
-                    //ColoredConsoleWrite(ConsoleColor.White, "Coded by Ferox - edited by NecronomiconCoding");
-                    //CheckVersion();
                     Execute();
                 }
                 catch (PtcOfflineException)
@@ -336,111 +317,12 @@ namespace PokemonGo.RocketAPI.Console
                     ColoredConsoleWrite(ConsoleColor.Red, $"[{DateTime.Now.ToString("HH:mm:ss")}] {Language.GetPhrases()["unhandled_ex"].Replace("[ex]", Convert.ToString(ex))}");
                 }
             });
-            //System.Console.ReadLine();
         }
 
-        private static async Task TransferAllButStrongestUnwantedPokemon(Client client)
-        {
-            //ColoredConsoleWrite(ConsoleColor.White, $"[{DateTime.Now.ToString("HH:mm:ss")}] Firing up the meat grinder");
 
-            var unwantedPokemonTypes = new[]
-            {
-                PokemonId.Pidgey,
-                PokemonId.Rattata,
-                PokemonId.Weedle,
-                PokemonId.Zubat,
-                PokemonId.Caterpie,
-                PokemonId.Pidgeotto,
-                PokemonId.Paras,
-                PokemonId.Venonat,
-                PokemonId.Psyduck,
-                PokemonId.Poliwag,
-                PokemonId.Slowpoke,
-                PokemonId.Drowzee,
-                PokemonId.Gastly,
-                PokemonId.Goldeen,
-                PokemonId.Staryu,
-                PokemonId.Magikarp,
-                PokemonId.Clefairy,
-                PokemonId.Eevee,
-                PokemonId.Tentacool,
-                PokemonId.Dratini,
-                PokemonId.Ekans,
-                PokemonId.Jynx,
-                PokemonId.Lickitung,
-                PokemonId.Spearow,
-                PokemonId.NidoranFemale,
-                PokemonId.NidoranMale
-            };
-
-            var inventory = await client.GetInventory();
-            var pokemons = inventory.InventoryDelta.InventoryItems
-                .Select(i => i.InventoryItemData?.Pokemon)
-                .Where(p => p != null && p?.PokemonId > 0)
-                .ToArray();
-
-            foreach (var unwantedPokemonType in unwantedPokemonTypes)
-            {
-                var pokemonOfDesiredType = pokemons.Where(p => p.PokemonId == unwantedPokemonType)
-                    .OrderByDescending(p => p.Cp)
-                    .ToList();
-
-                var unwantedPokemon =
-                    pokemonOfDesiredType.Skip(1) // keep the strongest one for potential battle-evolving
-                        .ToList();
-
-                //ColoredConsoleWrite(ConsoleColor.White, $"[{DateTime.Now.ToString("HH:mm:ss")}] Grinding {unwantedPokemon.Count} pokemons of type {unwantedPokemonType}");
-                await TransferAllGivenPokemons(client, unwantedPokemon);
-            }
-
-            //ColoredConsoleWrite(ConsoleColor.White, $"[{DateTime.Now.ToString("HH:mm:ss")}] Finished grinding all the meat");
-        }
-
-        public static float Perfect(PokemonData poke)
-        {
-            return ((float)(poke.IndividualAttack + poke.IndividualDefense + poke.IndividualStamina) / (3.0f * 15.0f)) * 100.0f;
-        }
-
-        private static async Task TransferAllGivenPokemons(Client client, IEnumerable<PokemonData> unwantedPokemons, float keepPerfectPokemonLimit = 80.0f)
-        {
-            foreach (var pokemon in unwantedPokemons)
-            {
-                if (Perfect(pokemon) >= keepPerfectPokemonLimit) continue;
-                ColoredConsoleWrite(ConsoleColor.White, $"[{DateTime.Now.ToString("HH:mm:ss")}] {Language.GetPhrases()["pokemon_iv_percent_less_than"].Replace("[pokemon]", Language.GetPokemons()[Convert.ToString(pokemon.PokemonId)]).Replace("[cp]", Convert.ToString(pokemon.Cp)).Replace("[percent]", Convert.ToString(keepPerfectPokemonLimit))}");
-
-                if (pokemon.Favorite == 0)
-                {
-                    var transferPokemonResponse = await client.TransferPokemon(pokemon.Id);
-
-                    /*
-                    ReleasePokemonOutProto.Status {
-                        UNSET = 0;
-                        SUCCESS = 1;
-                        POKEMON_DEPLOYED = 2;
-                        FAILED = 3;
-                        ERROR_POKEMON_IS_EGG = 4;
-                    }*/
-
-                    if (transferPokemonResponse.Status == 1)
-                    {
-                        ColoredConsoleWrite(ConsoleColor.Magenta, $"[{DateTime.Now.ToString("HH:mm:ss")}] {Language.GetPhrases()["transferred_pokemon"].Replace("[pokemon]", Language.GetPokemons()[Convert.ToString(pokemon.PokemonId)]).Replace("[cp]", Convert.ToString(pokemon.Cp))}");
-                    }
-                    else
-                    {
-                        var status = transferPokemonResponse.Status;
-
-                        ColoredConsoleWrite(ConsoleColor.Red, $"[{DateTime.Now.ToString("HH:mm:ss")}] {Language.GetPhrases()["transferred_pokemon_failed"].Replace("[pokemon]", Language.GetPokemons()[Convert.ToString(pokemon.PokemonId)]).Replace("[cp]", Convert.ToString(pokemon.Cp))}");
-                    }
-
-                    await Task.Delay(3000);
-                }
-            }
-        }
 
         private static async Task TransferDuplicatePokemon(Client client)
         {
-
-            //ColoredConsoleWrite(ConsoleColor.White, $"Check for duplicates");
             var inventory = await client.GetInventory();
             var allpokemons =
                 inventory.InventoryDelta.InventoryItems.Select(i => i.InventoryItemData?.Pokemon)
@@ -457,6 +339,7 @@ namespace PokemonGo.RocketAPI.Console
                     var dubpokemon = dupes.ElementAt(i).ElementAt(j).value;
                     if (dubpokemon.Favorite == 0)
                     {
+                        await Task.Delay(defaultDelay); ColoredConsoleWrite(ConsoleColor.White, $"TransferPokemon");
                         var transfer = await client.TransferPokemon(dubpokemon.Id);
                         ColoredConsoleWrite(ConsoleColor.DarkGreen,
                             $"[{DateTime.Now.ToString("HH:mm:ss")}] {Language.GetPhrases()["transferred_low_pokemon"].Replace("[pokemon]", Language.GetPokemons()[Convert.ToString(dubpokemon.PokemonId)]).Replace("[cp]", Convert.ToString(dubpokemon.Cp)).Replace("[high_cp]", Convert.ToString(dupes.ElementAt(i).Last().value.Cp))}");
@@ -466,178 +349,6 @@ namespace PokemonGo.RocketAPI.Console
             }
         }
 
-        private static async Task TransferAllWeakPokemon(Client client, int cpThreshold)
-        {
-            //ColoredConsoleWrite(ConsoleColor.White, $"[{DateTime.Now.ToString("HH:mm:ss")}] Firing up the meat grinder");
 
-            var doNotTransfer = new[] //these will not be transferred even when below the CP threshold
-            {
-                //PokemonId.Pidgey,
-                //PokemonId.Rattata,
-                //PokemonId.Weedle,
-                //PokemonId.Zubat,
-                //PokemonId.Caterpie,
-                //PokemonId.Pidgeotto,
-                //PokemonId.NidoranFemale,
-                //PokemonId.Paras,
-                //PokemonId.Venonat,
-                //PokemonId.Psyduck,
-                //PokemonId.Poliwag,
-                //PokemonId.Slowpoke,
-                //PokemonId.Drowzee,
-                //PokemonId.Gastly,
-                //PokemonId.Goldeen,
-                //PokemonId.Staryu,
-                PokemonId.Magikarp,
-                PokemonId.Eevee,
-                //PokemonId.Dratini
-            };
-
-            var inventory = await client.GetInventory();
-            var pokemons = inventory.InventoryDelta.InventoryItems
-                                .Select(i => i.InventoryItemData?.Pokemon)
-                                .Where(p => p != null && p?.PokemonId > 0)
-                                .ToArray();
-
-            //foreach (var unwantedPokemonType in unwantedPokemonTypes)
-            {
-                var pokemonToDiscard = pokemons.Where(p => !doNotTransfer.Contains(p.PokemonId) && p.Cp < cpThreshold)
-                                                   .OrderByDescending(p => p.Cp)
-                                                   .ToList();
-
-                //var unwantedPokemon = pokemonOfDesiredType.Skip(1) // keep the strongest one for potential battle-evolving
-                //                                          .ToList();
-                ColoredConsoleWrite(ConsoleColor.Gray, $"[{DateTime.Now.ToString("HH:mm:ss")}] {Language.GetPhrases()["grinding_pokemon"].Replace("[number]", Convert.ToString(pokemonToDiscard.Count)).Replace("[cp]", Convert.ToString(cpThreshold))}");
-                await TransferAllGivenPokemons(client, pokemonToDiscard);
-
-            }
-
-            ColoredConsoleWrite(ConsoleColor.Gray, $"[{DateTime.Now.ToString("HH:mm:ss")}] {Language.GetPhrases()["finished_grinding"]}");
-        }
-
-        public static async Task PrintLevel(Client client)
-        {
-            var inventory = await client.GetInventory();
-            var stats = inventory.InventoryDelta.InventoryItems.Select(i => i.InventoryItemData?.PlayerStats).ToArray();
-            foreach (var v in stats)
-                if (v != null)
-                {
-                    int XpDiff = GetXpDiff(client, v.Level);
-                    if (ClientSettings.LevelOutput == "time")
-                        ColoredConsoleWrite(ConsoleColor.Yellow, $"[{DateTime.Now.ToString("HH:mm:ss")}] {Language.GetPhrases()["current_lv"]} " + v.Level + " (" + (v.Experience - v.PrevLevelXp - XpDiff) + "/" + (v.NextLevelXp - v.PrevLevelXp - XpDiff) + ")");
-                    else if (ClientSettings.LevelOutput == "levelup")
-                        if (Currentlevel != v.Level)
-                        {
-                            Currentlevel = v.Level;
-                            ColoredConsoleWrite(ConsoleColor.Magenta, $"[{DateTime.Now.ToString("HH:mm:ss")}] {Language.GetPhrases()["current_lv"]}: " + v.Level + $". {Language.GetPhrases()["rpt"]} " + (v.NextLevelXp - v.Experience));
-                        }
-                }
-
-            await Task.Delay(ClientSettings.LevelTimeInterval * 1000);
-            PrintLevel(client);
-        }
-
-        public static async Task ConsoleLevelTitle(string Username, Client client)
-        {
-            var inventory = await client.GetInventory();
-            var stats = inventory.InventoryDelta.InventoryItems.Select(i => i.InventoryItemData?.PlayerStats).ToArray();
-            var profile = await client.GetProfile();
-            foreach (var v in stats)
-                if (v != null)
-                {
-                    int XpDiff = GetXpDiff(client, v.Level);
-                    System.Console.Title = string.Format(Username + "|lvl:{0:0}-({1:0}/{2:0})|STD:{3:0}", v.Level, (v.Experience - v.PrevLevelXp - XpDiff), (v.NextLevelXp - v.PrevLevelXp - XpDiff), profile.Profile.Currency.ToArray()[1].Amount) + "|XP/h:" + Math.Round(TotalExperience / GetRuntime()) + "|PM/h:" + Math.Round(TotalPokemon / GetRuntime())+ "|Lat/Lng:" + Convert.ToString(client.getCurrentLat()) + "/" + Convert.ToString(client.getCurrentLng());
-                }
-            await Task.Delay(1000);
-            ConsoleLevelTitle(Username, client);
-        }
-
-        public static int GetXpDiff(Client client, int Level)
-        {
-            switch (Level)
-            {
-                case 1:
-                    return 0;
-                case 2:
-                    return 1000;
-                case 3:
-                    return 2000;
-                case 4:
-                    return 3000;
-                case 5:
-                    return 4000;
-                case 6:
-                    return 5000;
-                case 7:
-                    return 6000;
-                case 8:
-                    return 7000;
-                case 9:
-                    return 8000;
-                case 10:
-                    return 9000;
-                case 11:
-                    return 10000;
-                case 12:
-                    return 10000;
-                case 13:
-                    return 10000;
-                case 14:
-                    return 10000;
-                case 15:
-                    return 15000;
-                case 16:
-                    return 20000;
-                case 17:
-                    return 20000;
-                case 18:
-                    return 20000;
-                case 19:
-                    return 25000;
-                case 20:
-                    return 25000;
-                case 21:
-                    return 50000;
-                case 22:
-                    return 75000;
-                case 23:
-                    return 100000;
-                case 24:
-                    return 125000;
-                case 25:
-                    return 150000;
-                case 26:
-                    return 190000;
-                case 27:
-                    return 200000;
-                case 28:
-                    return 250000;
-                case 29:
-                    return 300000;
-                case 30:
-                    return 350000;
-                case 31:
-                    return 500000;
-                case 32:
-                    return 500000;
-                case 33:
-                    return 750000;
-                case 34:
-                    return 1000000;
-                case 35:
-                    return 1250000;
-                case 36:
-                    return 1500000;
-                case 37:
-                    return 2000000;
-                case 38:
-                    return 2500000;
-                case 39:
-                    return 1000000;
-                case 40:
-                    return 1000000;
-            }
-            return 0;
-        }
     }
 }

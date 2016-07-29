@@ -399,9 +399,8 @@ namespace PokemonGo.RocketAPI
 
         public async Task RecycleItems(Client client)
         {
-            while (true)
-            {
-                var items = await GetItems(client);
+            await Task.Delay(500); ColoredConsoleWrite(ConsoleColor.White, $"GetItems");
+            var items = await GetItems(client);
                 int itemCount = items.Sum(e => e.Count);
                 if (itemCount > _settings.ItemRecyclingCount)
                 {
@@ -409,16 +408,16 @@ namespace PokemonGo.RocketAPI
 
                     foreach (var item in items)
                     {
-                        var transfer = await RecycleItem((AllEnum.ItemId)item.Item_, item.Count);
+                    await Task.Delay(500); ColoredConsoleWrite(ConsoleColor.White, $"RecycleItem)");
+                    var transfer = await RecycleItem((AllEnum.ItemId)item.Item_, item.Count);
                         ColoredConsoleWrite(ConsoleColor.DarkCyan, $"[{DateTime.Now.ToString("HH:mm:ss")}] Recycled {item.Count}x {(AllEnum.ItemId)item.Item_}");
-                        await Task.Delay(500);
+                        
                     }
                 }
                 else
                     ColoredConsoleWrite(ConsoleColor.DarkCyan, $"[{DateTime.Now.ToString("HH:mm:ss")}] Recycling cancelled (amount lower than setting): {itemCount} / {_settings.ItemRecyclingCount}");
 
-                await Task.Delay(_settings.RecycleItemsInterval * 1000);
-            }
+
         }
 
         public async Task<Response.Types.Unknown6> RecycleItem(AllEnum.ItemId itemId, int amount)
