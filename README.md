@@ -1,8 +1,8 @@
 ### 100Kexp/hour++ BOT, simple, fast. 
 Check external.config file before starting. Try to set the fastest requestDelay parameter you can use. This will make the bot faster. 
-But if it is too low the bot will keep restarting.
+But if it is too low the bot will keep restarting so try to fin the best value for you. For me 200 seems to do the trick.
 
-If you use google 2 step authentication you need to [GENERATE AN APP PASSWORD HERE](https://security.google.com/settings/security/apppasswords)
+If you use google 2 step authentication you need to [GENERATE AN APP PASSWORD HERE](https://security.google.com/settings/security/apppasswords) and use it instead of the real one.
 
 ##[DOWNLOAD QuickPokeBOT 1.2!](https://github.com/fededevi/QuickPokeBot/releases/download/1.2/QuickPokeBOT.1.2.rar)
 
