@@ -1,4 +1,4 @@
-### 100Kexp/hour++ BOT, simple, fast. 
+### QuickPokeBOT - simple, fast, 100k+/h. If you leki [DONATE!] (https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=UHJZAAW5CS4E2)
 Check external.config file before starting. Try to set the fastest requestDelay parameter you can use. This will make the bot faster. 
 But if it is too low the bot will keep restarting so try to fin the best value for you. For me 200 seems to do the trick.
 
