@@ -1,6 +1,16 @@
-### 100Kexp/hour++ BOT, simple, fast. Check external.config file before starting.
+### 100Kexp/hour++ BOT, simple, fast. 
+Check external.config file before starting. Try to set the fastest requestDelay parameter you can use. This will make the bot faster. But if it is too low the bot will keep restarting.
 
 ##[DOWNLOAD QuickPokeBOT 1.2!](https://github.com/fededevi/QuickPokeBot/releases/download/1.2/QuickPokeBOT.1.2.rar)
+
+## Features:
+* Farm Pokestops
+* Farm Pokemons
+* Recycle items
+* Keep strongest pokemon per type
+* Anti soft - ban system
+* Few settings
+* Fastest way to level up.
 
 ![image](https://cloud.githubusercontent.com/assets/5583580/17251158/d8acf59a-55a7-11e6-8af3-72b471563e12.png)
 
