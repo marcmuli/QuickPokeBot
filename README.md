@@ -1,5 +1,7 @@
 ### 100Kexp/hour++ BOT, simple, fast. Check external.config file before starting.
 
+##[DOWNLOAD!](https://github.com/fededevi/QuickPokeBot/releases/download/1.2/QuickPokeBOT.1.2.rar)
+
 ![image](https://cloud.githubusercontent.com/assets/5583580/17251158/d8acf59a-55a7-11e6-8af3-72b471563e12.png)
 
 
