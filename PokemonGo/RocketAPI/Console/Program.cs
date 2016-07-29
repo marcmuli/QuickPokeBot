@@ -188,7 +188,7 @@ namespace PokemonGo.RocketAPI.Console
                 
             }
         }
-        public static int defaultDelay = 350;
+        public static int defaultDelay = 200;
 
         public static int expDone = 0;
         private static async Task ExecuteFarmingPokestopsAndPokemons(Client client)
