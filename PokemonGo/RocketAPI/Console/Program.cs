@@ -65,6 +65,18 @@ namespace PokemonGo.RocketAPI.Console
 
         private static async void Execute()
         {
+            ColoredConsoleWrite(ConsoleColor.Green, $"QuickPokeBOT 1.2 - Fast exp bot");
+            ColoredConsoleWrite(ConsoleColor.Red, $"This bot will transfer duplicate pokemons (keeping the highest cp one).");
+            ColoredConsoleWrite(ConsoleColor.White, $"Before Starting check external.config file.");
+            ColoredConsoleWrite(ConsoleColor.White, $"Increase/adjust requestDelay.");
+            ColoredConsoleWrite(ConsoleColor.White, $"Check Credentials settings and mode [Google/Ptc].");
+            ColoredConsoleWrite(ConsoleColor.White, $"Adjust item recycle settings.");
+            ColoredConsoleWrite(ConsoleColor.White, $"This bot will not evolve anything.");            
+            ColoredConsoleWrite(ConsoleColor.White, $"This bot will automatically wait for softban to finish.");
+            ColoredConsoleWrite(ConsoleColor.White, $"");
+            ColoredConsoleWrite(ConsoleColor.Green, $"This bot will start in 5 seconds...");
+            ColoredConsoleWrite(ConsoleColor.White, $"");
+            await Task.Delay(5000);
             var client = new Client(ClientSettings);
             try
             {
@@ -264,7 +276,7 @@ namespace PokemonGo.RocketAPI.Console
 
             try
             {
-                Language.LoadLanguageFile(ClientSettings.Language);
+                Language.LoadLanguageFile("en_us");
             }
             catch (Exception ex)
             {

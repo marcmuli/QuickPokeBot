@@ -398,7 +398,6 @@ namespace PokemonGo.RocketAPI
                     await Task.Delay(requestDelay);// ColoredConsoleWrite(ConsoleColor.White, $"RecycleItem)");
                     var transfer = await RecycleItem((AllEnum.ItemId)item.Item_, item.Count);
                         ColoredConsoleWrite(ConsoleColor.DarkCyan, $"Recycled {item.Count}x {(AllEnum.ItemId)item.Item_}");
-                        
                     }
                 }
                 else
