@@ -2,7 +2,7 @@
 In this bot useless features that were slowing down leveling have been removed, it will only move and catch as fast as possible.
 
 
-![untitled](https://cloud.githubusercontent.com/assets/5583580/17248033/cbf4a6d2-5597-11e6-8c35-2bf7665aa0eb.png)
+![untitled](https://cloud.githubusercontent.com/assets/5583580/17249773/cb19cd14-55a1-11e6-97c5-293deac5d6a3.png)
 
 ### When filing a new bug / Issue, please include:
 
