@@ -83,6 +83,8 @@ namespace PokemonGo.RocketAPI.Console
             var client = new Client(ClientSettings);
             try
             {
+                defaultDelay = Int32.Parse(ClientSettings.requestsDelay);
+
                 if (ClientSettings.AuthType == AuthType.Ptc)
                     await client.DoPtcLogin(ClientSettings.PtcUsername, ClientSettings.PtcPassword);
                 else if (ClientSettings.AuthType == AuthType.Google)

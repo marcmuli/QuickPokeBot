@@ -27,6 +27,8 @@ namespace PokemonGo.RocketAPI.Console
         public string PtcUsername => GetSetting() != string.Empty ? GetSetting() : "username";
         public string PtcPassword => GetSetting() != string.Empty ? GetSetting() : "password";
 
+        public string requestsDelay => GetSetting() != string.Empty ? GetSetting() : "200";
+
         public string GoogleEmail => GetSetting() != string.Empty ? GetSetting() : "username";
         public string GooglePassword => GetSetting() != string.Empty ? GetSetting() : "password";
 
