@@ -9,6 +9,7 @@ If you use google 2 step authentication you need to [GENERATE AN APP PASSWORD HE
 ## Features:
 * Farm Pokestops
 * Farm Pokemons
+* Evolve Pidgeys & other useless pm
 * Recycle items
 * Keep strongest pokemon per type
 * Anti soft - ban system
