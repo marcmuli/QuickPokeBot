@@ -63,6 +63,38 @@ namespace PokemonGo.RocketAPI.Console
             updateTitle();
         }
 
+        public static async Task Evolve( Client client )
+        {
+            await Task.Delay(defaultDelay);
+            var inventory = await client.GetInventory();
+            var pokemonToEvolve = inventory.InventoryDelta
+                .InventoryItems.Select(i => i.InventoryItemData?.Pokemon)
+                .Where(p => p?.PokemonId > 0)
+                .ToArray();
+
+            foreach (var pokemon in pokemonToEvolve)
+            {
+                
+
+                if (pokemon.PokemonId == PokemonId.Pidgey ||
+                    pokemon.PokemonId == PokemonId.Spearow ||
+                    pokemon.PokemonId == PokemonId.Rattata ||
+                    pokemon.PokemonId == PokemonId.Weedle ||
+                    pokemon.PokemonId == PokemonId.Caterpie ||
+                    pokemon.PokemonId == PokemonId.Zubat)
+                {
+                    await Task.Delay(defaultDelay);
+                    
+                    EvolvePokemonOut evolvePokemonOutProto = await client.EvolvePokemon(pokemon.Id);
+                    addExp(evolvePokemonOutProto.ExpAwarded);
+                    if (evolvePokemonOutProto.ExpAwarded > 0)
+                    {
+                        ColoredConsoleWrite(ConsoleColor.Green, $"Evolved { Language.GetPokemons()[Convert.ToString(pokemon.PokemonId)] }");
+                    }
+                }
+            }
+        }
+
         private static async void Execute()
         {
             ColoredConsoleWrite(ConsoleColor.Green, $"QuickPokeBOT 1.2 - Fast exp bot");
@@ -71,7 +103,7 @@ namespace PokemonGo.RocketAPI.Console
             ColoredConsoleWrite(ConsoleColor.White, $"Increase/adjust requestDelay.");
             ColoredConsoleWrite(ConsoleColor.White, $"Check Credentials settings and mode [Google/Ptc].");
             ColoredConsoleWrite(ConsoleColor.White, $"Adjust item recycle settings.");
-            ColoredConsoleWrite(ConsoleColor.White, $"This bot will not evolve anything.");            
+            ColoredConsoleWrite(ConsoleColor.White, $"This bot will evolve Pidgeys and other useless PM.");            
             ColoredConsoleWrite(ConsoleColor.White, $"This bot will automatically wait for softban to finish.");
             ColoredConsoleWrite(ConsoleColor.White, $"");
             ColoredConsoleWrite(ConsoleColor.Green, $"This bot will start in 5 seconds...");
@@ -101,7 +133,10 @@ namespace PokemonGo.RocketAPI.Console
                 await Task.Delay(defaultDelay); //ColoredConsoleWrite(ConsoleColor.White, $"GetInventory");
                 var inventory = await client.GetInventory();
                 var pokemons = inventory.InventoryDelta.InventoryItems.Select(i => i.InventoryItemData?.Pokemon).Where(p => p != null && p?.PokemonId > 0);
-                
+
+                await Task.Delay(defaultDelay);
+                await Evolve(client); //ColoredConsoleWrite(ConsoleColor.White, $"Transfer PK");
+
                 await Task.Delay(defaultDelay); //ColoredConsoleWrite(ConsoleColor.White, $"Transfer PK");
                 await TransferDuplicatePokemon(client);
 
