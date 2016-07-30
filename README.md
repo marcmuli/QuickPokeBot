@@ -13,6 +13,7 @@ If you use google 2 step authentication you need to [GENERATE AN APP PASSWORD HE
 * Recycle items
 * Keep strongest pokemon per type
 * Anti soft - ban system
+* Auto restart script
 * Few settings
 * Fastest way to level up.
 
