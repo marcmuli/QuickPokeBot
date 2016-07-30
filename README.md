@@ -4,7 +4,7 @@ But if it is too low the bot will keep restarting so try to fin the best value f
 
 If you use google 2 step authentication you need to [GENERATE AN APP PASSWORD HERE](https://security.google.com/settings/security/apppasswords) and use it instead of the real one.
 
-##[DOWNLOAD QuickPokeBOT 1.2!](https://github.com/fededevi/QuickPokeBot/releases/download/1.2/QuickPokeBOT.1.2.rar)
+##[DOWNLOAD QuickPokeBOT 1.3!](https://github.com/fededevi/QuickPokeBot/releases/download/1.3/QuickPokeBOT1.3.zip)
 
 ## Features:
 * Farm Pokestops
